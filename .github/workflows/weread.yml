@@ -22,5 +22,6 @@ jobs:
 
       - name: 执行打卡脚本
         env:
-          WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }} # 这里的变量名必须与下一步设置的保险箱名称一致
-        run: node src/index.js # 启动 src 文件夹下的核心逻辑
+          WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
+          WEREAD_SELECTION: -1
+        run: node src/weread-challenge.js

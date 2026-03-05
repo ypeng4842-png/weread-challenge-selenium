@@ -1,9 +1,9 @@
 name: 微信读书自动打卡阅读
 
 on:
-  workflow_dispatch: # 支持你在 GitHub 页面手动点击运行
+  workflow_dispatch:
   schedule:
-    - cron: '30 0 * * *' # 每天北京时间 08:30 自动运行
+    - cron: '30 0 * * *'
 
 jobs:
   build:
@@ -16,6 +16,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+
+      - name: 安装 Chrome 浏览器 # 新增逻辑：解决浏览器缺失问题
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
       - name: 安装依赖
         run: npm install

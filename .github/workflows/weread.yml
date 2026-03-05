@@ -1,0 +1,26 @@
+name: 微信读书自动打卡阅读
+
+on:
+  workflow_dispatch: # 支持你在 GitHub 页面手动点击运行
+  schedule:
+    - cron: '30 0 * * *' # 每天北京时间 08:30 自动运行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: 安装依赖
+        run: npm install
+
+      - name: 执行打卡脚本
+        env:
+          WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }} # 这里的变量名必须与下一步设置的保险箱名称一致
+        run: node src/index.js # 启动 src 文件夹下的核心逻辑

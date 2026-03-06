@@ -1,4 +1,4 @@
-name: 微信读书自动打卡阅读
+name: 微信读书自动打卡阅读 (Docker版)
 
 on:
   workflow_dispatch:
@@ -12,23 +12,14 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 安装 Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: 安装 Chrome 浏览器及其依赖 # 新增：确保云端有浏览器可用
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
-
-      - name: 安装依赖
-        run: npm install
-
-      - name: 执行打卡脚本
+      - name: 启动 Docker 集装箱打卡
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
           WEREAD_SELECTION: -1
-          # 强制开启“无头模式”，解决云端无显示器导致的崩溃
-          NODE_OPTIONS: "--max-old-space-size=4096" 
-        run: node src/weread-challenge.js
+        # 逻辑：利用项目自带的 Dockerfile 自动构建并运行
+        run: |
+          docker build -t weread-image .
+          docker run --rm \
+            -e WEREAD_COOKIE="$WEREAD_COOKIE" \
+            -e WEREAD_SELECTION="$WEREAD_SELECTION" \
+            weread-image

@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: 安装 Chrome 浏览器 # 新增逻辑：解决浏览器缺失问题
+      - name: 安装 Chrome 浏览器及其依赖 # 新增：确保云端有浏览器可用
         run: |
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
@@ -29,4 +29,6 @@ jobs:
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
           WEREAD_SELECTION: -1
+          # 强制开启“无头模式”，解决云端无显示器导致的崩溃
+          NODE_OPTIONS: "--max-old-space-size=4096" 
         run: node src/weread-challenge.js

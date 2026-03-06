@@ -17,12 +17,12 @@ jobs:
 
       - name: 启动双容器阵列
         env:
-          # 从保险箱取出原始钥匙
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 1. 将钥匙写入环境变量文件 .env
+          # 1. 将 Secrets 里的钥匙写入当前目录的 .env 文件
+          # 注意：不要加单引号，直接注入原始字符串
           echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
           echo "WEREAD_SELECTION=-1" >> .env
           
-          # 2. 启动阵列（Docker 会自动根据手册里的定义去 .env 找钥匙）
+          # 2. 启动阵列。Docker 会自动读取 .env 并填入我们刚才在手册里留的插槽
           docker compose up --build --abort-on-container-exit

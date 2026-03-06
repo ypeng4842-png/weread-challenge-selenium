@@ -17,11 +17,13 @@ jobs:
 
       - name: 启动双容器阵列
         env:
-          RAW_COOKIE: ${{ secrets.WEREAD_COOKIE }}
+          # 直接将 Secret 映射到当前 Shell 环境变量
+          WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
+          WEREAD_SELECTION: -1
         run: |
-          # 核心修正：使用双引号包裹整体，防止 Bash 转义，同时确保写入 .env 时不带多余符号
-          echo "WEREAD_COOKIE=${RAW_COOKIE}" > .env
-          echo "WEREAD_SELECTION=-1" >> .env
-          
-          # 启动阵列
-          docker compose up --build --abort-on-container-exit
+          # 放弃生成 .env 文件，直接通过 docker compose 的 --env-file 之外的方式或环境变量传递
+          # 这里我们使用 docker compose run 来强制覆盖环境变量
+          docker compose run --rm \
+            -e WEREAD_COOKIE="$WEREAD_COOKIE" \
+            -e WEREAD_SELECTION="$WEREAD_SELECTION" \
+            app

@@ -4,7 +4,7 @@ services:
     pull_policy: always
     environment:
       - WEREAD_REMOTE_BROWSER=http://selenium:4444
-      # 建立接收插槽
+      # 这就是缺失的三个核心阀门，没有它们，环境变量进不去容器！
       - WEREAD_COOKIE=${WEREAD_COOKIE}
       - WEREAD_SELECTION=${WEREAD_SELECTION}
       - WEREAD_DURATION=${WEREAD_DURATION}
@@ -19,9 +19,12 @@ services:
     image: selenium/standalone-chromium:latest
     pull_policy: if_not_present
     shm_size: 2gb
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - SE_ENABLE_TRACING=false
       - SE_BIND_HOST=false
+      - SE_JAVA_DISABLE_HOSTNAME_VERIFICATION=false
     dns:
       - 223.5.5.5
     healthcheck:

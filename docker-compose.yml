@@ -1,14 +1,11 @@
 services:
   app:
     image: jqknono/weread-challenge:latest
-    pull_policy: always
     environment:
       - WEREAD_REMOTE_BROWSER=http://selenium:4444
-      # 修正 1：建立映射桥梁，让脚本能读到保险箱里的钥匙
+      - WEREAD_DURATION=120
       - WEREAD_COOKIE=${WEREAD_COOKIE}
       - WEREAD_SELECTION=${WEREAD_SELECTION}
-      # 修正 2：设置你要求的 2 小时阅读时长
-      - WEREAD_DURATION=120
     volumes:
       - ./data:/app/data
     depends_on:

@@ -1,4 +1,4 @@
-name: 微信读书自动打卡阅读 (Docker版)
+name: 微信读书自动打卡阅读 (双容器矩阵版)
 
 on:
   workflow_dispatch:
@@ -6,20 +6,19 @@ on:
     - cron: '30 0 * * *'
 
 jobs:
-  build:
+  run-challenge:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 启动 Docker 集装箱打卡
+      - name: 启动双容器阵列
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
-          WEREAD_SELECTION: -1
-        # 逻辑：利用项目自带的 Dockerfile 自动构建并运行
         run: |
-          docker build -t weread-image .
-          docker run --rm \
-            -e WEREAD_COOKIE="$WEREAD_COOKIE" \
-            -e WEREAD_SELECTION="$WEREAD_SELECTION" \
-            weread-image
+          # 动态生成环境变量文件供 Docker 阵列读取
+          echo "WEREAD_COOKIE=$WEREAD_COOKIE" > .env
+          echo "WEREAD_SELECTION=-1" >> .env
+          
+          # 唤醒 docker-compose 阵列
+          docker-compose up --build --abort-on-container-exit

@@ -1,11 +1,13 @@
 services:
   app:
     image: jqknono/weread-challenge:latest
+    pull_policy: always
     environment:
       - WEREAD_REMOTE_BROWSER=http://selenium:4444
-      - WEREAD_DURATION=120
+      # 建立接收插槽
       - WEREAD_COOKIE=${WEREAD_COOKIE}
       - WEREAD_SELECTION=${WEREAD_SELECTION}
+      - WEREAD_DURATION=${WEREAD_DURATION}
     volumes:
       - ./data:/app/data
     depends_on:
@@ -17,12 +19,9 @@ services:
     image: selenium/standalone-chromium:latest
     pull_policy: if_not_present
     shm_size: 2gb
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - SE_ENABLE_TRACING=false
       - SE_BIND_HOST=false
-      - SE_JAVA_DISABLE_HOSTNAME_VERIFICATION=false
     dns:
       - 223.5.5.5
     healthcheck:

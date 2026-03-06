@@ -1,47 +1,27 @@
-name: 微信读书自动打卡阅读 (脱敏探针排错版)
+name: 微信读书自动打卡阅读
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * *' # 每天北京时间早上 9 点
 
 jobs:
-  debug-and-run:
+  run-challenge:
     runs-on: ubuntu-latest
+    timeout-minutes: 130
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 运行脱敏探针与打卡
+      - name: 启动双容器阵列
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          echo "=========================================="
-          echo "=== 探针阶段 1: 检查 GitHub 保险箱 ==="
-          echo "=========================================="
-          COOKIE_LEN=${#WEREAD_COOKIE}
-          echo "获取到的 Cookie 长度为: $COOKIE_LEN 字符"
-          echo "获取到的 Cookie 前 15 个字符为: ${WEREAD_COOKIE:0:15}..."
-          
-          if [ "$COOKIE_LEN" -eq 0 ]; then
-            echo "🚨 致命错误：保险箱完全是空的！"
-            exit 1
-          fi
-
-          echo "=========================================="
-          echo "=== 探针阶段 2: 文件级注入测试 ==="
-          echo "=========================================="
           echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
           echo "WEREAD_SELECTION=-1" >> .env
           echo "WEREAD_DURATION=120" >> .env
           
-          echo "当前 .env 文件包含的字节数："
-          wc -c .env
-
-          echo "=========================================="
-          echo "=== 探针阶段 3: 容器内部穿透测试 ==="
-          echo "=========================================="
-          # 强行让 Docker 打印出它内部真实接收到的环境变量
-          docker compose run --rm app env | grep WEREAD || echo "🚨 致命错误：变量未能穿透进入集装箱！"
-
+          docker compose up --build --abort-on-container-exit
           echo "=========================================="
           echo "=== 探针阶段 4: 正式点火执行 ==="
           echo "=========================================="

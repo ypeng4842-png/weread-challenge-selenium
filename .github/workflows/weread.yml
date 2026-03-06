@@ -3,11 +3,14 @@ name: 微信读书自动打卡阅读 (双容器矩阵版)
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 0 * * *'
+    # 每天北京时间早上 9 点准时进入列队 (UTC 01:00)
+    - cron: '0 1 * * *'
 
 jobs:
   run-challenge:
     runs-on: ubuntu-latest
+    # 物理级熔断：最大运行 120 分钟（2小时）后强制安全下线，防风控死循环
+    timeout-minutes: 120
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
@@ -16,9 +19,9 @@ jobs:
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 动态生成环境变量文件
+          # 动态注入环境变量
           echo "WEREAD_COOKIE=$WEREAD_COOKIE" > .env
           echo "WEREAD_SELECTION=-1" >> .env
           
-          # 修正后的启动指令（将 docker-compose 改为 docker compose）
+          # 启动阵列
           docker compose up --build --abort-on-container-exit

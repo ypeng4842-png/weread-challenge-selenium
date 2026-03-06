@@ -4,7 +4,11 @@ services:
     pull_policy: always
     environment:
       - WEREAD_REMOTE_BROWSER=http://selenium:4444
-      - WEREAD_DURATION=68
+      # 修正 1：将阅读时长改为你要求的 120 分钟
+      - WEREAD_DURATION=120 
+      # 修正 2：建立映射桥梁，让容器能读取到我们在 Secret 里存的钥匙
+      - WEREAD_COOKIE=${WEREAD_COOKIE}
+      - WEREAD_SELECTION=${WEREAD_SELECTION}
     volumes:
       - ./data:/app/data
     depends_on:

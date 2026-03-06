@@ -1,4 +1,4 @@
-name: 微信读书自动打卡阅读 (终极核平版)
+name: 微信读书自动打卡阅读 (明文烧录版)
 
 on:
   workflow_dispatch:
@@ -13,21 +13,22 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 强行重写配置并点火
+      - name: 物理级明文烧录并点火
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 核心驳斥：不再信任仓库里任何旧的 docker-compose.yml
-          # 现场强行覆写一个自带变量插槽的完美版本
-          cat << 'EOF' > docker-compose.yml
+          # 核心修复：去掉了 EOF 的单引号，利用底层强制将 Cookie 文本刻印进文件
+          # 双保险：同时注入 WEREAD_COOKIE 和 WEREAD_COOKIES 应对不同版本的底层读取
+          cat << EOF > docker-compose.yml
           services:
             app:
               image: jqknono/weread-challenge:latest
               environment:
                 - WEREAD_REMOTE_BROWSER=http://selenium:4444
-                - WEREAD_COOKIE=${WEREAD_COOKIE}
                 - WEREAD_SELECTION=-1
                 - WEREAD_DURATION=120
+                - "WEREAD_COOKIE=${WEREAD_COOKIE}"
+                - "WEREAD_COOKIES=${WEREAD_COOKIE}"
               depends_on:
                 selenium:
                   condition: service_healthy
@@ -43,9 +44,6 @@ jobs:
                 timeout: 60s
                 retries: 10
           EOF
-          
-          # 将保险箱的钥匙发给 Docker
-          echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
           
           # 终极点火
           docker compose up --abort-on-container-exit

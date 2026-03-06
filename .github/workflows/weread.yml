@@ -1,28 +1,26 @@
-name: 微信读书自动打卡阅读 (双容器矩阵版)
+name: 微信读书自动打卡阅读 (终极注入版)
 
 on:
   workflow_dispatch:
   schedule:
-    # 每天北京时间早上 9 点准时进入列队 (UTC 01:00)
-    - cron: '0 1 * * *'
+    - cron: '0 1 * * *' # 北京时间每天早上 09:00
 
 jobs:
   run-challenge:
     runs-on: ubuntu-latest
-    # 物理级熔断：最大运行 120 分钟（2小时）后强制安全下线，防风控死循环
-    timeout-minutes: 120
+    timeout-minutes: 130 # 留出 10 分钟冗余，确保能跑满 120 分钟
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 启动双容器阵列 (直接注入版)
+      - name: 启动双容器阵列 (暴力注入模式)
         env:
+          # 此处必须与你 GitHub Secrets 里的名称完全一致
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
-          WEREAD_SELECTION: -1
         run: |
-          # 逻辑：直接通过 -e 参数强制注入环境变量，不经过 .env 文件
-          # 这样能规避所有文件读取不到的风险
+          # 放弃所有 .env 中间文件，直接通过命令行参数注入
           docker compose run --rm \
             -e WEREAD_COOKIE="$WEREAD_COOKIE" \
-            -e WEREAD_SELECTION="$WEREAD_SELECTION" \
+            -e WEREAD_SELECTION="-1" \
+            -e WEREAD_DURATION="120" \
             app

@@ -1,26 +1,48 @@
-name: 微信读书自动打卡阅读 (终极注入版)
+name: 微信读书自动打卡阅读 (脱敏探针排错版)
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 1 * * *' # 北京时间每天早上 09:00
 
 jobs:
-  run-challenge:
+  debug-and-run:
     runs-on: ubuntu-latest
-    timeout-minutes: 130 # 留出 10 分钟冗余，确保能跑满 120 分钟
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 启动双容器阵列 (暴力注入模式)
+      - name: 运行脱敏探针与打卡
         env:
-          # 此处必须与你 GitHub Secrets 里的名称完全一致
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 放弃所有 .env 中间文件，直接通过命令行参数注入
-          docker compose run --rm \
-            -e WEREAD_COOKIE="$WEREAD_COOKIE" \
-            -e WEREAD_SELECTION="-1" \
-            -e WEREAD_DURATION="120" \
-            app
+          echo "=========================================="
+          echo "=== 探针阶段 1: 检查 GitHub 保险箱 ==="
+          echo "=========================================="
+          COOKIE_LEN=${#WEREAD_COOKIE}
+          echo "获取到的 Cookie 长度为: $COOKIE_LEN 字符"
+          echo "获取到的 Cookie 前 15 个字符为: ${WEREAD_COOKIE:0:15}..."
+          
+          if [ "$COOKIE_LEN" -eq 0 ]; then
+            echo "🚨 致命错误：保险箱完全是空的！"
+            exit 1
+          fi
+
+          echo "=========================================="
+          echo "=== 探针阶段 2: 文件级注入测试 ==="
+          echo "=========================================="
+          echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
+          echo "WEREAD_SELECTION=-1" >> .env
+          echo "WEREAD_DURATION=120" >> .env
+          
+          echo "当前 .env 文件包含的字节数："
+          wc -c .env
+
+          echo "=========================================="
+          echo "=== 探针阶段 3: 容器内部穿透测试 ==="
+          echo "=========================================="
+          # 强行让 Docker 打印出它内部真实接收到的环境变量
+          docker compose run --rm app env | grep WEREAD || echo "🚨 致命错误：变量未能穿透进入集装箱！"
+
+          echo "=========================================="
+          echo "=== 探针阶段 4: 正式点火执行 ==="
+          echo "=========================================="
+          docker compose up --build --abort-on-container-exit

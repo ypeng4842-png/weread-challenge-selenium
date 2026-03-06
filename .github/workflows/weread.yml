@@ -1,9 +1,9 @@
-name: 微信读书自动打卡阅读
+name: 微信读书自动打卡阅读 (终极核平版)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 1 * * *' # 每天北京时间早上 9 点
+    - cron: '0 1 * * *'
 
 jobs:
   run-challenge:
@@ -13,16 +13,39 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v3
 
-      - name: 启动双容器阵列
+      - name: 强行重写配置并点火
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
-          echo "WEREAD_SELECTION=-1" >> .env
-          echo "WEREAD_DURATION=120" >> .env
+          # 核心驳斥：不再信任仓库里任何旧的 docker-compose.yml
+          # 现场强行覆写一个自带变量插槽的完美版本
+          cat << 'EOF' > docker-compose.yml
+          services:
+            app:
+              image: jqknono/weread-challenge:latest
+              environment:
+                - WEREAD_REMOTE_BROWSER=http://selenium:4444
+                - WEREAD_COOKIE=${WEREAD_COOKIE}
+                - WEREAD_SELECTION=-1
+                - WEREAD_DURATION=120
+              depends_on:
+                selenium:
+                  condition: service_healthy
+            selenium:
+              image: selenium/standalone-chromium:latest
+              shm_size: 2gb
+              environment:
+                - SE_ENABLE_TRACING=false
+                - SE_BIND_HOST=false
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://selenium:4444/status"]
+                interval: 5s
+                timeout: 60s
+                retries: 10
+          EOF
           
-          docker compose up --build --abort-on-container-exit
-          echo "=========================================="
-          echo "=== 探针阶段 4: 正式点火执行 ==="
-          echo "=========================================="
-          docker compose up --build --abort-on-container-exit
+          # 将保险箱的钥匙发给 Docker
+          echo "WEREAD_COOKIE=${WEREAD_COOKIE}" > .env
+          
+          # 终极点火
+          docker compose up --abort-on-container-exit

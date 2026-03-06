@@ -17,11 +17,10 @@ jobs:
 
       - name: 启动双容器阵列
         env:
-          # 从保险箱直接提取原始数据
           RAW_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 使用单引号强行锁定字符串，防止环境变量被转义
-          echo "WEREAD_COOKIE='${RAW_COOKIE}'" > .env
+          # 核心修正：使用双引号包裹整体，防止 Bash 转义，同时确保写入 .env 时不带多余符号
+          echo "WEREAD_COOKIE=${RAW_COOKIE}" > .env
           echo "WEREAD_SELECTION=-1" >> .env
           
           # 启动阵列

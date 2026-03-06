@@ -16,9 +16,9 @@ jobs:
         env:
           WEREAD_COOKIE: ${{ secrets.WEREAD_COOKIE }}
         run: |
-          # 动态生成环境变量文件供 Docker 阵列读取
+          # 动态生成环境变量文件
           echo "WEREAD_COOKIE=$WEREAD_COOKIE" > .env
           echo "WEREAD_SELECTION=-1" >> .env
           
-          # 唤醒 docker-compose 阵列
-          docker-compose up --build --abort-on-container-exit
+          # 修正后的启动指令（将 docker-compose 改为 docker compose）
+          docker compose up --build --abort-on-container-exit
